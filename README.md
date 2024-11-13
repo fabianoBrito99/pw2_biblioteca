@@ -1,1 +1,6 @@
-# ads-pw2-2024-2-estrutura-base
+# Projeto de web2 para a Gestão de uma Biblioteca
+
+## tecnologias
+- Html
+- CSS
+- Nestjs
