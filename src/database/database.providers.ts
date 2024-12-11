@@ -8,10 +8,10 @@ export const databaseProviders = [
       const dataSource = new DataSource({
         type: 'mysql',
         host: 'localhost',
-        port: 3308,
+        port: 3306,
         username: 'root',
         password: 'root',
-        database: 'tarefas_db',
+        database: 'pw2_biblioteca',
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         namingStrategy: new SnakeNamingStrategy(),
         synchronize: true,
