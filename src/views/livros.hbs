@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Livros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .livro {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .livro:last-child {
+            border-bottom: none;
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Livros</h1>
+        {{#if livros.length}}
+            <ul>
+                {{#each livros}}
+                    <li>
+                        <strong>{{nome_livro}}</strong> - {{descricao}} ({{ano_publicacao}})
+                    </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>Nenhum livro encontrado.</p>
+        {{/if}}
+    </div>
+</body>
+</html>
