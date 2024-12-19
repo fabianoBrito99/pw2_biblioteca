@@ -1,0 +1,38 @@
+<head>
+
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0;
+    padding: 0; } .card{ text-decoration: none; color: #000; } .button{
+      margin-left: auto;
+      margin-right: auto;
+    border-radius: 8px; padding: 10px; color: #ffffff; text-decoration: none;
+    background-image: linear-gradient(to bottom, #5340ff, #222757); } .container
+    { max-width: 800px; margin: 50px auto; background: #fff; padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); display: flex; flex-direction:
+    column; align-items: center; justify-content: center; border-radius: 10px; }
+    .livro { border-bottom: 1px solid #ddd; padding: 10px 0; } .livro:last-child
+    { border-bottom: none; } h2 { color: #333; } p { color: #666; } .liTeste{
+    display: flex; flex-direction: column; margin-bottom: 20px; background:
+    rgb(218, 216, 200); width: 500px; border-radius: 10px ; padding: 19px 50px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.219); }
+  </style>
+</head>
+<h1>Lista de Livros</h1>
+<div class='container'>
+  <ul>
+    {{#each livros}}
+      <a class='card' href='/livros/{{this.id_livro}}'>
+
+        <li class='liTeste'>
+          {{!-- <a href='/livros/{{this.id_livro}}'>{{this.nome_livro}}</a> --}}
+          <strong>{{nome_livro}}</strong>
+          <span> <strong>Descrição: </strong>{{this.descricao}}</span>
+          <span><strong>Ano de Lançamento:</strong>
+            {{this.ano_publicacao}}</span>
+
+        </li>
+      </a>
+    {{/each}}
+  </ul>
+</div>
+<a class='button' href='/livros/novo'>Novo Livro</a>

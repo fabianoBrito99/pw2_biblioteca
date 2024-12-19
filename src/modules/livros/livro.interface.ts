@@ -4,5 +4,5 @@ export interface Livro {
   quantidade_paginas: number;
   descricao: string;
   ano_publicacao: number;
-  quantidade_estoque: number;
+
 }
