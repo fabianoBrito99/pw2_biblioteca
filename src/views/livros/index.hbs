@@ -19,6 +19,10 @@
 </head>
 <h1>Lista de Livros</h1>
 <div class='container'>
+<h1>Lista de Livros</h1>
+  {{#unless hideMenu}}
+    {{> menu}}
+  {{/unless}}
   <ul>
     {{#each livros}}
       <a class='card' href='/livros/{{this.id_livro}}'>
@@ -35,4 +39,3 @@
     {{/each}}
   </ul>
 </div>
-<a class='button' href='/livros/novo'>Novo Livro</a>

@@ -1,8 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { Emprestimos } from './emprestismos.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  ManyToMany,
+  JoinTable,
+  OneToOne,
+} from 'typeorm';
+import { Emprestimos } from './emprestimos.entity';
 import { LivroCategoria } from './livro_categoria.entity';
 import { Estoque } from './estoque.entity';
-
+import { Categoria } from './categoria.entity';
+import { Autor } from './autor.entity';
 
 @Entity('livro')
 export class Livro {
@@ -21,12 +32,24 @@ export class Livro {
   @Column({ type: 'year', nullable: true })
   ano_publicacao?: number;
 
+  @Column({ type: 'int', nullable: false, default: 0 })
+  quantidade_estoque: number;
+
   @OneToMany(() => Emprestimos, (emprestimo) => emprestimo.livro)
   emprestimos: Emprestimos[];
 
   @OneToMany(() => LivroCategoria, (livroCategoria) => livroCategoria.livro)
-  categorias: LivroCategoria[];
+  categorias: LivroCategoria[]; // ✅ Corrigindo relação com `Categoria`
 
-  @OneToMany(() => Estoque, estoque => estoque.livro)
-  estoques: Estoque[];
+  @ManyToMany(() => Autor, (autor) => autor.livros)
+  @JoinTable({
+    name: 'autor_livro',
+    joinColumn: { name: 'fk_id_livro', referencedColumnName: 'id_livro' },
+    inverseJoinColumn: { name: 'fk_id_autor', referencedColumnName: 'id_autor' },
+  })
+  autores: Autor[];
+
+  @OneToOne(() => Estoque, (estoque) => estoque.livro, { cascade: true })
+  estoque: Estoque;
+
 }

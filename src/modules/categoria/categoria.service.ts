@@ -1,34 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Categoria } from '../../entities/categoria.entity';
 
 @Injectable()
 export class CategoriaService {
-  constructor(
-    @InjectRepository(Categoria)
-    private readonly categoriaRepository: Repository<Categoria>,
-  ) {}
+  private categoriaRepository;
 
+  constructor(private dataSource: DataSource) {
+    this.categoriaRepository = this.dataSource.getRepository(Categoria);
+  }
+
+  /** Retorna todas as categorias */
   async findAll(): Promise<Categoria[]> {
-    return this.categoriaRepository.find();
+    return await this.categoriaRepository.find();
   }
 
-  async create(categoria: Categoria): Promise<Categoria> {
-    const newCategoria = this.categoriaRepository.create(categoria);
-    return this.categoriaRepository.save(newCategoria);
-  }
-
+  /** Retorna uma categoria específica */
   async findOne(id: number): Promise<Categoria> {
-    return this.categoriaRepository.findOneBy({ id_categoria: id });
+    return await this.categoriaRepository.findOne({ where: { id_categoria: id } });
   }
+
+  /** Cria ou retorna uma categoria existente */
   async findOrCreate(nome_categoria: string): Promise<Categoria> {
     let categoria = await this.categoriaRepository.findOne({ where: { nome_categoria } });
+
     if (!categoria) {
       categoria = this.categoriaRepository.create({ nome_categoria });
-      categoria = await this.categoriaRepository.save(categoria);
+      await this.categoriaRepository.save(categoria);
     }
+
     return categoria;
   }
-  
 }

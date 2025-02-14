@@ -7,17 +7,17 @@ export class CategoriaController {
   constructor(private readonly categoriaService: CategoriaService) {}
 
   @Get()
-  async findAll(): Promise<Categoria[]> {
+  async listarCategorias(): Promise<Categoria[]> {
     return this.categoriaService.findAll();
   }
 
-  @Post()
-  async create(@Body() categoria: Categoria): Promise<Categoria> {
-    return this.categoriaService.create(categoria);
+  @Get(':id')
+  async verCategoria(@Param('id') id: number): Promise<Categoria> {
+    return this.categoriaService.findOne(id);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: number): Promise<Categoria> {
-    return this.categoriaService.findOne(id);
+  @Post()
+  async criarCategoria(@Body('nome_categoria') nome_categoria: string): Promise<Categoria> {
+    return this.categoriaService.findOrCreate(nome_categoria);
   }
 }

@@ -7,13 +7,18 @@ import {
   Patch,
   Delete,
   Render,
+  UseGuards,
+  Request,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { LivrosService } from './livros.service';
 import { CategoriaService } from '../categoria/categoria.service';
 import { EstoqueService } from '../estoque/estoque.service';
-import { Livro } from '../../entities/livro.entity';
+import { AuthenticatedGuard } from '../../common/guards/authenticated.guard';
 
 @Controller('livros')
+@UseGuards(AuthenticatedGuard) 
 export class LivrosController {
   constructor(
     private readonly livrosService: LivrosService,
@@ -21,82 +26,84 @@ export class LivrosController {
     private readonly estoqueService: EstoqueService,
   ) {}
 
+  /** Lista todos os livros - Protegido por autenticação */
   @Get()
-  @Render('livros/index')
-  async listarLivros() {
-    const livros = await this.livrosService.findAll();
-    return { livros };
+  async listarLivros(@Request() req, @Res() res: Response) {
+    console.log('🔹 [Controller] Acessando /livros');
+    console.log('🔹 [Controller] Sessão do usuário:', req.session?.user);
+
+    if (!req.session?.user) {
+      console.log('⚠️ [Controller] Usuário não autenticado - Redirecionando para login');
+      return res.redirect('/auth/login'); 
+    }
+
+    try {
+      const livros = await this.livrosService.findAll();
+      console.log('✅ [Controller] Livros encontrados:', livros);
+
+      return res.render('livros/index', { livros, user: req.session.user });
+    } catch (error) {
+      console.error('❌ [Controller] Erro ao buscar livros:', error);
+      return res.status(500).json({ error: 'Erro ao carregar livros' });
+    }
   }
 
+  /** Página para criar novo livro - Protegida */
   @Get('novo')
   @Render('livros/novo')
   novoLivro() {
-    return {};
+    return { hideMenu: false };
   }
 
+  /** Criar livro */
   @Post()
-  @Post()
-  async criarLivro(
-    @Body() livroData: {
-      nome_livro: string;
-      quantidade_paginas: number;
-      descricao: string;
-      ano_publicacao: number;
-      categoria: string;
-      quantidade_estoque: number;
-    },
-  ) {
+  async criarLivro(@Res() res: Response, @Body() livroData: any) {
     try {
-      const { categoria, quantidade_estoque, ...dadosLivro } = livroData;
-  
-      // Log para verificar o valor de quantidade_estoque
-      console.log('Quantidade em estoque recebida:', quantidade_estoque);
-  
-      // Criando o livro e passando quantidade_estoque como segundo argumento
-      const livro = await this.livrosService.create(dadosLivro, quantidade_estoque);
-  
-      // Associando a categoria se fornecida
+      const { categoria, quantidade_estoque, autores, ...dadosLivro } = livroData;
+
+      // Garantir que `autores` seja um array
+      const listaAutores = Array.isArray(autores) ? autores : [autores];
+
+      const livro = await this.livrosService.create(dadosLivro, quantidade_estoque, listaAutores);
+
       if (categoria) {
         const categoriaEntity = await this.categoriaService.findOrCreate(categoria);
         await this.livrosService.associarCategoria(livro, categoriaEntity);
       }
-  
-      // Criando o estoque se a quantidade_estoque for fornecida
+
       if (quantidade_estoque !== undefined) {
-        console.log('Criando estoque com quantidade:', quantidade_estoque);
-        await this.estoqueService.create({
-          quantidade_estoque,
-          livro: livro, // Garantir que estamos associando o estoque ao livro correto
-        });
+        await this.estoqueService.create(quantidade_estoque); 
       }
-  
-      return livro;
+
+      return res.redirect('/livros');
     } catch (error) {
       console.error('Erro ao criar livro:', error);
-      throw new Error('Erro ao criar livro');
+      return res.redirect('/livros/novo');
     }
   }
-  
-  
-  
 
+  /** Página de detalhes do livro */
   @Get(':id')
   @Render('livros/detalhes')
   async verLivro(@Param('id') id: number) {
-    const livro = await this.livrosService.findOne(id);
-    return { livro };
+    const livro = await this.livrosService.findOneDetalhado(id);
+
+    return {
+      livro,
+      hideMenu: false,
+      podeReservar: livro.quantidade_estoque > 0, // Só permite reserva se houver estoque
+    };
   }
 
-  @Patch(':id')
-  async atualizarLivro(
-    @Param('id') id: number,
-    @Body() livroData: Partial<Livro>,
-  ) {
-    return this.livrosService.update(id, livroData);
-  }
-
-  @Delete(':id')
-  async removerLivro(@Param('id') id: number) {
-    return this.livrosService.remove(id);
+  /** Criar reserva do livro */
+  @Post(':id/reservar')
+  async reservarLivro(@Request() req, @Res() res: Response, @Param('id') id: number) {
+    try {
+      await this.livrosService.reservarLivro(id, req.session.user.id_usuario);
+      return res.redirect(`/livros/${id}`);
+    } catch (error) {
+      console.error('Erro ao reservar livro:', error);
+      return res.redirect(`/livros/${id}`);
+    }
   }
 }

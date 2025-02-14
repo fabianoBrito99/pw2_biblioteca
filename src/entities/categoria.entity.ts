@@ -10,5 +10,7 @@ export class Categoria {
   nome_categoria: string;
 
   @OneToMany(() => LivroCategoria, (livroCategoria) => livroCategoria.categoria)
-  livros: LivroCategoria[];
+  livroCategorias: LivroCategoria[];
+  
+  
 }

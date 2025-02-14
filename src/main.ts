@@ -10,6 +10,7 @@ import { NotFoundExceptionFilter } from './common/filters/not-found-exception.fi
 import { flashErrors } from './common/helpers/flash-errors';
 import { hbsRegisterHelpers } from './common/helpers/hbs-functions';
 import flash = require('connect-flash');
+import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -35,6 +36,10 @@ async function bootstrap() {
 
   app.use(flashErrors);
   app.useGlobalFilters(new NotFoundExceptionFilter());
+
+  // ✅ Agora o TypeORM já foi inicializado, podemos acessar a conexão
+  const dataSource = app.get(DataSource);
+  console.log('🔹 [Debug] Entidades registradas no TypeORM:', dataSource.entityMetadatas.map(e => e.name));
 
   await app.listen(3000);
 }

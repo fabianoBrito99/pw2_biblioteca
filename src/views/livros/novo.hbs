@@ -1,50 +1,110 @@
 <head>
-
   <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0;
-    padding: 0; } .card{ text-decoration: none; color: #000; } .button{
-    margin-left: auto; margin-right: auto; border-radius: 8px; padding: 10px;
-    color: #ffffff; text-decoration: none; background-image: linear-gradient(to
-    bottom, #5340ff, #222757); } .container { display:} .container-form {
-    display: flex; flex-direction: column; max-width: 900px; margin: 50px auto;
-    background: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex; flex-direction: column; align-items: center; justify-content:
-    center; border-radius: 10px; }
+    /* Estilos Gerais */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
+    /* Contêiner Principal */
+    .container {
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    /* Card de Formulário */
+    .container-form {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Campos do Formulário */
+    label {
+      font-weight: bold;
+      color: #444;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    input, textarea, datalist {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    textarea {
+      resize: none;
+      height: 80px;
+    }
+
+    /* Botão */
+    .button {
+      background: linear-gradient(to bottom, #5340ff, #222757);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+
+    .button:hover {
+      background: linear-gradient(to bottom, #6451ff, #333383);
+    }
   </style>
 </head>
 
-<div class='container'>
+<div class="container">
   <h1>Novo Livro</h1>
-  <form action='/livros' method='post'>
-    <div class='container-form'>
-      <label for='nome_livro'>Nome:</label>
-      <input type='text' id='nome_livro' name='nome_livro' required />
+  <form action="/livros" method="post">
+    <div class="container-form">
+      <label for="nome_livro">Nome:</label>
+      <input type="text" id="nome_livro" name="nome_livro" required />
 
-      <label for='quantidade_paginas'>Quantidade de Páginas:</label>
-      <input type='number' id='quantidade_paginas' name='quantidade_paginas' />
+      <label for="quantidade_paginas">Quantidade de Páginas:</label>
+      <input type="number" id="quantidade_paginas" name="quantidade_paginas" />
 
-      <label for='descricao'>Descrição:</label>
-      <textarea id='descricao' name='descricao'></textarea>
+      <label for="descricao">Descrição:</label>
+      <textarea id="descricao" name="descricao"></textarea>
 
-      <label for='ano_publicacao'>Ano de Publicação:</label>
-      <input type='number' id='ano_publicacao' name='ano_publicacao' />
+      <label for="ano_publicacao">Ano de Publicação:</label>
+      <input type="number" id="ano_publicacao" name="ano_publicacao" />
 
-      <label for='categoria'>Categoria:</label>
-      <input list='categorias' id='categoria' name='categoria' required />
-      <datalist id='categorias'>
-        <!-- Preenchido dinamicamente pelo backend com categorias existentes -->
+      <label for="categoria">Categoria:</label>
+      <input list="categorias" id="categoria" name="categoria" required />
+      <datalist id="categorias">
+     
       </datalist>
 
-      <label for='quantidade_estoque'>Quantidade no Estoque:</label>
-      <input
-        type='number'
-        id='quantidade_estoque'
-        name='quantidade_estoque'
-        required
-      />
+      <label for="quantidade_estoque">Quantidade no Estoque:</label>
+      <input type="number" id="quantidade_estoque" name="quantidade_estoque" required />
 
-      <button class='button' type='submit'>Salvar</button>
+      <button class="button" type="submit">Salvar</button>
     </div>
   </form>
 </div>

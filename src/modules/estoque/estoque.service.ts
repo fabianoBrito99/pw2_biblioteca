@@ -1,34 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Estoque } from '../../entities/estoque.entity';
-import { Livro } from '../../entities/livro.entity'; // Importe a entidade Livro
 
 @Injectable()
 export class EstoqueService {
-  constructor(
-    @InjectRepository(Estoque)
-    private readonly estoqueRepository: Repository<Estoque>,
-  ) {}
+  private estoqueRepository;
 
+  constructor(private dataSource: DataSource) {
+    this.estoqueRepository = this.dataSource.getRepository(Estoque);
+  }
+
+  /** Retorna todos os registros de estoque */
   async findAll(): Promise<Estoque[]> {
-    return this.estoqueRepository.find();
+    return await this.estoqueRepository.find({ relations: ['livro'] });
   }
 
-  async create(estoqueData: { quantidade_estoque: number; livro: Livro }): Promise<Estoque> {
-    if (estoqueData.quantidade_estoque === undefined || estoqueData.quantidade_estoque < 0) {
-      throw new Error('Quantidade de estoque inválida');
-    }
-
-    if (!estoqueData.livro) {
-      throw new Error('Livro não encontrado');
-    }
-
-    const novoEstoque = this.estoqueRepository.create(estoqueData);
-    return this.estoqueRepository.save(novoEstoque);
-  }
-
+  /** Retorna um registro de estoque específico */
   async findOne(id: number): Promise<Estoque> {
-    return this.estoqueRepository.findOneBy({ id_estoque: id });
+    return await this.estoqueRepository.findOne({
+      where: { id_estoque: id },
+      relations: ['livro'],
+    });
+  }
+
+  /** Atualiza a quantidade em estoque de um livro */
+  async updateQuantidade(id: number, quantidade: number): Promise<Estoque> {
+    const estoque = await this.estoqueRepository.findOne({
+      where: { id_estoque: id },
+    });
+
+    if (!estoque) {
+      throw new Error('Estoque não encontrado');
+    }
+
+    estoque.quantidade_estoque = quantidade;
+    return await this.estoqueRepository.save(estoque);
+  }
+
+  /** Cria um novo registro de estoque */
+  async create(quantidade_estoque: number): Promise<Estoque> {
+    const novoEstoque = this.estoqueRepository.create({ quantidade_estoque });
+    return await this.estoqueRepository.save(novoEstoque);
   }
 }

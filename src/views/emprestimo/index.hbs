@@ -1,0 +1,56 @@
+{{#> main}}
+  {{#*inline "content"}}
+    <style>
+      .emprestimos-container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: white;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+
+      .emprestimo-item {
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
+      }
+
+      .emprestimo-item:last-child {
+        border-bottom: none;
+      }
+
+      .devolver-button {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
+
+    <div class="emprestimos-container">
+      <h2>Meus Empréstimos</h2>
+
+      {{#if emprestimos.length}}
+        {{#each emprestimos}}
+          <div class="emprestimo-item">
+            <p><strong>Livro:</strong> {{this.livro.nome_livro}}</p>
+            <p><strong>Data do Empréstimo:</strong> {{this.data_emprestimo}}</p>
+            <p><strong>Data Prevista de Devolução:</strong> {{this.data_prevista_devolucao}}</p>
+
+            {{#if this.data_devolucao}}
+              <p><strong>Devolvido em:</strong> {{this.data_devolucao}}</p>
+            {{else}}
+              <form action="/emprestimos/{{this.id_emprestimo}}/devolver" method="post">
+                <button class="devolver-button" type="submit">Devolver</button>
+              </form>
+            {{/if}}
+          </div>
+        {{/each}}
+      {{else}}
+        <p>Nenhum empréstimo ativo.</p>
+      {{/if}}
+    </div>
+  {{/inline}}
+{{/main}}

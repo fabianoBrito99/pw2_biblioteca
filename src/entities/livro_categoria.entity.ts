@@ -8,10 +8,10 @@ export class LivroCategoria {
   id_livro_categoria: number;
 
   @ManyToOne(() => Livro, (livro) => livro.categorias, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'fk_id_livros' }) // Mapeando a coluna `fk_id_livros` explicitamente
+  @JoinColumn({ name: 'fk_id_livros' })
   livro: Livro;
 
-  @ManyToOne(() => Categoria, (categoria) => categoria.livros, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'fk_id_categoria' }) // Mapeando a coluna `fk_id_categoria` explicitamente
+  @ManyToOne(() => Categoria, (categoria) => categoria.livroCategorias, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'fk_id_categoria' })
   categoria: Categoria;
 }

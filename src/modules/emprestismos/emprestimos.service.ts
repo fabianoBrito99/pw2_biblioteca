@@ -1,34 +1,55 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Emprestimos } from '../../entities/emprestismos.entity';
+import { DataSource } from 'typeorm';
+import { Emprestimos } from '../../entities/emprestimos.entity';
+import { Livro } from '../../entities/livro.entity';
 
 @Injectable()
 export class EmprestimosService {
-  constructor(
-    @InjectRepository(Emprestimos)
-    private emprestimosRepository: Repository<Emprestimos>,
-  ) {}
+  private emprestimosRepository;
+  private livroRepository;
 
+  constructor(private dataSource: DataSource) {
+    this.emprestimosRepository = this.dataSource.getRepository(Emprestimos);
+    this.livroRepository = this.dataSource.getRepository(Livro);
+  }
+
+  /** Lista todos os empréstimos */
   async findAll(): Promise<Emprestimos[]> {
-    return this.emprestimosRepository.find({ relations: ['livro'] });
+    return await this.emprestimosRepository.find({ relations: ['livro'] });
   }
 
+  /** Busca um empréstimo específico */
   async findOne(id: number): Promise<Emprestimos> {
-    return this.emprestimosRepository.findOne({ where: { id_emprestimo: id }, relations: ['livro'] });
+    return await this.emprestimosRepository.findOne({
+      where: { id_emprestimo: id },
+      relations: ['livro'],
+    });
   }
 
+  /** Cria um novo empréstimo */
   async create(data: Partial<Emprestimos>): Promise<Emprestimos> {
-    const emprestimo = this.emprestimosRepository.create(data);
-    return this.emprestimosRepository.save(emprestimo);
+    const novoEmprestimo = this.emprestimosRepository.create(data);
+    return await this.emprestimosRepository.save(novoEmprestimo);
   }
 
-  async update(id: number, data: Partial<Emprestimos>): Promise<Emprestimos> {
-    await this.emprestimosRepository.update(id, data);
-    return this.findOne(id);
-  }
+  /** Processa a devolução de um livro */
+  async devolverLivro(id: number): Promise<void> {
+    const emprestimo = await this.emprestimosRepository.findOne({
+      where: { id_emprestimo: id },
+      relations: ['livro'],
+    });
 
-  async remove(id: number): Promise<void> {
-    await this.emprestimosRepository.delete(id);
+    if (!emprestimo || emprestimo.data_devolucao) {
+      throw new Error('Empréstimo inválido ou já devolvido');
+    }
+
+    emprestimo.data_devolucao = new Date();
+    await this.emprestimosRepository.save(emprestimo);
+
+    // Atualizar estoque do livro
+    if (emprestimo.livro) {
+      emprestimo.livro.quantidade_estoque += 1;
+      await this.livroRepository.save(emprestimo.livro);
+    }
   }
 }

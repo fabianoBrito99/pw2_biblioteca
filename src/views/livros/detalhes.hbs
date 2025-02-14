@@ -1,0 +1,74 @@
+{{#> main}}
+  {{#*inline "content"}}
+    <style>
+      .livro-container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+
+      .livro-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .livro-info {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      .livro-info strong {
+        color: #333;
+      }
+
+      .reservar-button {
+        display: block;
+        width: 100%;
+        background-color: #28a745;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-top: 15px;
+      }
+
+      .reservar-button:hover {
+        background-color: #218838;
+      }
+
+      .indisponivel {
+        background-color: #dc3545;
+        cursor: not-allowed;
+      }
+    </style>
+
+    <div class="livro-container">
+      <h2 class="livro-header">{{livro.nome_livro}}</h2>
+
+      <p class="livro-info"><strong>Quantidade de Páginas:</strong> {{livro.quantidade_paginas}}</p>
+      <p class="livro-info"><strong>Descrição:</strong> {{livro.descricao}}</p>
+      <p class="livro-info"><strong>Ano de Publicação:</strong> {{livro.ano_publicacao}}</p>
+      <p class="livro-info"><strong>Quantidade em Estoque:</strong> {{livro.quantidade_estoque}}</p>
+
+      <p class="livro-info"><strong>Autores:</strong> 
+        {{#each livro.autores}} {{this.nome}} {{#unless @last}}, {{/unless}} {{/each}}
+      </p>
+
+      <p class="livro-info"><strong>Categorias:</strong> 
+        {{#each livro.categorias}} {{this.nome_categoria}} {{#unless @last}}, {{/unless}} {{/each}}
+      </p>
+
+      {{#if podeReservar}}
+        <form action="/livros/{{livro.id_livro}}/reservar" method="post">
+          <button class="reservar-button" type="submit">Reservar</button>
+        </form>
+      {{else}}
+        <button class="reservar-button indisponivel" disabled>Indisponível</button>
+      {{/if}}
+    </div>
+  {{/inline}}
+{{/main}}
