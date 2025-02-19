@@ -9,9 +9,8 @@ export class Estoque {
   @OneToOne(() => Livro, (livro) => livro.estoque, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'fk_id_livro' })
   livro: Livro;
-  
-  
 
-  @Column()
+  @Column({ type: 'int', nullable: false })
   quantidade_estoque: number;
 }
+

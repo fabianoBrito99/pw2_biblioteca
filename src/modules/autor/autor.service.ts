@@ -27,8 +27,12 @@ export class AutorService {
     if (!autor) {
       autor = this.autorRepository.create({ nome });
       await this.autorRepository.save(autor);
+      console.log('[Service] Novo autor criado:', autor);
+    } else {
+      console.log('[Service] Autor já existente:', autor);
     }
 
     return autor;
-  }
+}
+
 }

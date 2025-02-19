@@ -27,8 +27,12 @@ export class CategoriaService {
     if (!categoria) {
       categoria = this.categoriaRepository.create({ nome_categoria });
       await this.categoriaRepository.save(categoria);
+      console.log('[Service] Categoria criada:', categoria);
+    } else {
+      console.log('[Service] Categoria já existente:', categoria);
     }
 
     return categoria;
-  }
+}
+
 }

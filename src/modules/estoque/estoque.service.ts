@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Estoque } from '../../entities/estoque.entity';
+import { Livro } from 'src/entities/livro.entity';
 
 @Injectable()
 export class EstoqueService {
@@ -38,8 +39,16 @@ export class EstoqueService {
   }
 
   /** Cria um novo registro de estoque */
-  async create(quantidade_estoque: number): Promise<Estoque> {
-    const novoEstoque = this.estoqueRepository.create({ quantidade_estoque });
-    return await this.estoqueRepository.save(novoEstoque);
+  async create(livro: Livro, quantidade: number): Promise<Estoque> {
+    console.log('🔹 [Service] Criando estoque para livro:', livro.nome_livro);
+
+    const novoEstoque = new Estoque();
+    novoEstoque.livro = livro; 
+    novoEstoque.quantidade_estoque = quantidade;
+
+    const estoqueSalvo = await this.estoqueRepository.save(novoEstoque);
+    console.log('✅ [Service] Estoque salvo:', estoqueSalvo);
+
+    return estoqueSalvo;
   }
 }

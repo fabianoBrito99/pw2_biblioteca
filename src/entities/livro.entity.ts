@@ -32,14 +32,16 @@ export class Livro {
   @Column({ type: 'year', nullable: true })
   ano_publicacao?: number;
 
-  @Column({ type: 'int', nullable: false, default: 0 })
-  quantidade_estoque: number;
-
   @OneToMany(() => Emprestimos, (emprestimo) => emprestimo.livro)
   emprestimos: Emprestimos[];
 
-  @OneToMany(() => LivroCategoria, (livroCategoria) => livroCategoria.livro)
-  categorias: LivroCategoria[]; // ✅ Corrigindo relação com `Categoria`
+  @ManyToMany(() => Categoria, (categoria) => categoria.livroCategorias, { eager: true }) 
+  @JoinTable({
+    name: 'livro_categoria',
+    joinColumn: { name: 'fk_id_livros', referencedColumnName: 'id_livro' },
+    inverseJoinColumn: { name: 'fk_id_categoria', referencedColumnName: 'id_categoria' }
+  })
+  categorias: Categoria[];
 
   @ManyToMany(() => Autor, (autor) => autor.livros)
   @JoinTable({

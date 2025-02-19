@@ -15,9 +15,13 @@ export class LivrosService {
   private autorRepository;
   private emprestimosRepository;
 
-  constructor(private dataSource: DataSource, private readonly estoqueService: EstoqueService) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly estoqueService: EstoqueService,
+  ) {
     this.livroRepository = this.dataSource.getRepository(Livro);
-    this.livroCategoriaRepository = this.dataSource.getRepository(LivroCategoria);
+    this.livroCategoriaRepository =
+      this.dataSource.getRepository(LivroCategoria);
     this.categoriaRepository = this.dataSource.getRepository(Categoria);
     this.autorRepository = this.dataSource.getRepository(Autor);
     this.emprestimosRepository = this.dataSource.getRepository(Emprestimos);
@@ -26,58 +30,32 @@ export class LivrosService {
   /** Retorna todos os livros com suas categorias e autores */
   async findAll(): Promise<Livro[]> {
     console.log('🔹 [Service] Buscando todos os livros');
-  
+
     try {
       console.log('🔹 [Service] Buscando livros sem relations...');
-      const livrosSemRelations = await this.livroRepository.find({ select: ['id_livro', 'nome_livro'] });
+      const livrosSemRelations = await this.livroRepository.find({
+        select: ['id_livro', 'nome_livro'],
+      });
       console.log('✅ [Service] Livros sem relations:', livrosSemRelations);
-  
-      console.log('🔹 [Service] Buscando categorias dos livros...');
-      const livrosComCategorias = await this.livroRepository.find({
-        relations: ['categorias'],
-        select: ['id_livro', 'nome_livro'],
-      });
-      console.log('✅ [Service] Livros com categorias:', livrosComCategorias);
-  
-      console.log('🔹 [Service] Buscando autores dos livros...');
-      const livrosComAutores = await this.livroRepository.find({
-        relations: ['autores'],
-        select: ['id_livro', 'nome_livro'],
-      });
-      console.log('✅ [Service] Livros com autores:', livrosComAutores);
-  
-      console.log('🔹 [Service] Buscando livros com todas as relações...');
+
+      console.log('🔹 [Service] Buscando livros com categorias e autores...');
       const livros = await this.livroRepository.find({
-        relations: ['categorias', 'autores'], // ⚠️ Se der erro, o problema está aqui
+        relations: ['categorias', 'autores'],
       });
-  
+
+      // 🔹 Buscar quantidade_estoque da tabela Estoque
+      for (const livro of livros) {
+        const estoque = await this.estoqueService.findOne(livro.id_livro);
+        livro['quantidade_estoque'] = estoque?.quantidade_estoque || 0; // Evita erro se não houver estoque
+      }
+
       console.log('✅ [Service] Livros encontrados:', livros);
       return livros;
     } catch (error) {
       console.error('❌ [Service] Erro ao buscar livros:', error);
-  
-      // 🔹 Debug extra para identificar a relação problemática
-      try {
-        console.log('🔹 [Service] Buscando IDs das categorias...');
-        const categoriasSimples = await this.dataSource.getRepository('Categoria').find({ select: ['id_categoria', 'nome_categoria'] });
-        console.log('✅ [Service] Categorias encontradas:', categoriasSimples);
-      } catch (err) {
-        console.error('❌ [Service] Erro ao buscar categorias:', err);
-      }
-  
-      try {
-        console.log('🔹 [Service] Buscando IDs dos autores...');
-        const autoresSimples = await this.dataSource.getRepository('Autor').find({ select: ['id_autor', 'nome'] });
-        console.log('✅ [Service] Autores encontrados:', autoresSimples);
-      } catch (err) {
-        console.error('❌ [Service] Erro ao buscar autores:', err);
-      }
-  
       throw new Error('Erro ao buscar livros no banco de dados.');
     }
   }
-  
-  
 
   /** Retorna um livro específico com categorias */
   async findOne(id: number): Promise<Livro> {
@@ -91,24 +69,28 @@ export class LivrosService {
   async findOneDetalhado(id: number): Promise<Livro> {
     return await this.livroRepository.findOne({
       where: { id_livro: id },
-      relations: ['categorias', 'autores'],
+      relations: ['categorias', 'autores', 'estoque'],
     });
   }
 
   /** Cria um novo livro e associa autores e categorias */
-  async create(livroData: Partial<Livro>, quantidade_estoque: number, autores: string[]): Promise<Livro> {
-    const novoLivro = this.livroRepository.create({ ...livroData, quantidade_estoque });
+  async create(
+    livroData: Partial<Livro>,
+    quantidade_estoque: number,
+    categoria: Categoria,
+    autor: Autor,
+  ): Promise<Livro> {
+    console.log('🔹 [Service] Criando novo livro:', livroData);
+
+    const novoLivro = this.livroRepository.create({
+      ...livroData,
+      quantidade_estoque,
+      categorias: [categoria],
+      autores: [autor],
+    });
+
     const livroSalvo = await this.livroRepository.save(novoLivro);
-
-    // Criar o estoque associado ao livro
-  if (quantidade_estoque >= 0) {
-    await this.estoqueService.create(quantidade_estoque); 
-  }
-
-    // Associar autores ao livro
-    for (const nomeAutor of autores) {
-      await this.associarAutor(livroSalvo, nomeAutor);
-    }
+    console.log('[Service] Livro salvo:', livroSalvo);
 
     return livroSalvo;
   }
@@ -130,13 +112,18 @@ export class LivrosService {
       throw new Error('Livro ou Categoria não encontrados');
     }
 
-    const livroCategoria = this.livroCategoriaRepository.create({ livro, categoria });
+    const livroCategoria = this.livroCategoriaRepository.create({
+      livro,
+      categoria,
+    });
     await this.livroCategoriaRepository.save(livroCategoria);
   }
 
   /** Associa um autor a um livro */
   async associarAutor(livro: Livro, nomeAutor: string): Promise<void> {
-    let autor = await this.autorRepository.findOne({ where: { nome: nomeAutor } });
+    let autor = await this.autorRepository.findOne({
+      where: { nome: nomeAutor },
+    });
 
     if (!autor) {
       autor = this.autorRepository.create({ nome: nomeAutor });
@@ -148,34 +135,48 @@ export class LivrosService {
   }
 
   /** Criar uma reserva */
-  async reservarLivro(id_livro: number, id_usuario: number): Promise<void> {
-    const livro = await this.livroRepository.findOne({ where: { id_livro } });
+/** Criar uma reserva */
+async reservarLivro(id_livro: number, id_usuario: number): Promise<string> {
+  // Busca o livro
+  const livro = await this.livroRepository.findOne({ where: { id_livro } });
 
-    if (!livro || livro.quantidade_estoque <= 0) {
-      throw new Error('Livro indisponível para reserva');
-    }
-
-    // Criar o empréstimo corretamente
-    const emprestimo = this.emprestimosRepository.create({
-      data_emprestimo: new Date(),
-      data_prevista_devolucao: new Date(new Date().setDate(new Date().getDate() + 7)),
-      fk_id_livro: id_livro,
-    });
-
-    const emprestimoSalvo = await this.emprestimosRepository.save(emprestimo);
-
-    if (!emprestimoSalvo || !emprestimoSalvo.id_emprestimo) {
-      throw new Error('Erro ao salvar empréstimo.');
-    }
-
-    // Relacionar usuário ao empréstimo
-    await this.emprestimosRepository.query(
-      `INSERT INTO usuario_emprestimos (fk_id_usuario, fk_id_emprestimo) VALUES (?, ?)`,
-      [id_usuario, emprestimoSalvo.id_emprestimo],
-    );
-
-    // Atualizar estoque
-    livro.quantidade_estoque -= 1;
-    await this.livroRepository.save(livro);
+  if (!livro) {
+    throw new Error('Livro não encontrado.');
   }
+
+  // Busca o estoque do livro usando o EstoqueService
+  const estoque = await this.estoqueService.findOne(id_livro);
+
+  if (!estoque || estoque.quantidade_estoque <= 0) {
+    throw new Error('Livro indisponível para reserva.');
+  }
+
+  // Diminui o estoque
+  estoque.quantidade_estoque -= 1;
+  await this.estoqueService.updateQuantidade(id_livro, estoque.quantidade_estoque);
+
+  // Cria o empréstimo
+  const emprestimo = this.emprestimosRepository.create({
+    data_emprestimo: new Date(),
+    data_prevista_devolucao: new Date(
+      new Date().setDate(new Date().getDate() + 7)
+    ), // 7 dias para devolução
+    data_devolucao: null,
+    fk_id_livro: id_livro,
+  });
+
+  const emprestimoSalvo = await this.emprestimosRepository.save(emprestimo);
+
+  // Associa usuário ao empréstimo
+  await this.emprestimosRepository.query(
+    `INSERT INTO usuario_emprestimos (fk_id_usuario, fk_id_emprestimo) VALUES (?, ?)`,
+    [id_usuario, emprestimoSalvo.id_emprestimo]
+  );
+
+  // Gera um código de reserva
+  const codigoReserva = `cod${emprestimoSalvo.id_emprestimo}`;
+
+  return `Livro reservado com sucesso! Vá até a biblioteca e apresente o código: ${codigoReserva}`;
+}
+
 }

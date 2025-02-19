@@ -47,18 +47,30 @@
     </style>
 
     <div class="livro-container">
+      {{#if success}}
+        <div class="alert alert-success">
+          {{success}}
+        </div>
+      {{/if}}
+
+      {{#if error}}
+        <div class="alert alert-danger">
+          {{error}}
+        </div>
+      {{/if}}
+
       <h2 class="livro-header">{{livro.nome_livro}}</h2>
 
       <p class="livro-info"><strong>Quantidade de Páginas:</strong> {{livro.quantidade_paginas}}</p>
       <p class="livro-info"><strong>Descrição:</strong> {{livro.descricao}}</p>
       <p class="livro-info"><strong>Ano de Publicação:</strong> {{livro.ano_publicacao}}</p>
-      <p class="livro-info"><strong>Quantidade em Estoque:</strong> {{livro.quantidade_estoque}}</p>
+      <p class="livro-info"><strong>Quantidade em Estoque:</strong> {{quantidade_estoque}}</p>
 
-      <p class="livro-info"><strong>Autores:</strong> 
+      <p class="livro-info"><strong>Autor:</strong> 
         {{#each livro.autores}} {{this.nome}} {{#unless @last}}, {{/unless}} {{/each}}
       </p>
 
-      <p class="livro-info"><strong>Categorias:</strong> 
+    <p class="livro-info"><strong>Categorias:</strong> 
         {{#each livro.categorias}} {{this.nome_categoria}} {{#unless @last}}, {{/unless}} {{/each}}
       </p>
 

@@ -15,11 +15,6 @@ CREATE TABLE IF NOT EXISTS usuario (
   numero VARCHAR(10) NULL
 );
 
--- Tabela estoque
-CREATE TABLE IF NOT EXISTS estoque (
-  id_estoque INT PRIMARY KEY AUTO_INCREMENT,
-  quantidade_estoque INT NOT NULL
-);
 
 -- Tabela livro
 CREATE TABLE IF NOT EXISTS livro (
@@ -28,7 +23,14 @@ CREATE TABLE IF NOT EXISTS livro (
   quantidade_paginas INT NULL,
   descricao TEXT NULL,
   ano_publicacao YEAR NULL,
-  quantidade_estoque INT NOT NULL
+);
+
+-- Tabela estoque
+CREATE TABLE estoque (
+  id_estoque INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  quantidade_estoque INT NOT NULL,
+  fk_id_livro INT NOT NULL,
+  FOREIGN KEY (fk_id_livro) REFERENCES livro(id_livro) ON DELETE CASCADE
 );
 
 -- Tabela categoria
