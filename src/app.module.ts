@@ -7,11 +7,11 @@ import { LivrosModule } from './modules/livros/livros.module';
 import { CategoriaModule } from './modules/categoria/categoria.module';
 import { EstoqueModule } from './modules/estoque/estoque.module';
 import { AutorModule } from './modules/autor/autor.module';
-import { EmprestimosModule } from './modules/emprestismos/emprestismos.module';
+import { EmprestimosModule } from './modules/emprestimos/emprestismos.module';
 
 @Module({
   imports: [
-    DatabaseModule, 
+    DatabaseModule,
     AuthModule,
     LivrosModule,
     UsersModule,

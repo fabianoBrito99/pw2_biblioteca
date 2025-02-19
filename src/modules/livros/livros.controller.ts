@@ -4,8 +4,6 @@ import {
   Post,
   Body,
   Param,
-  Patch,
-  Delete,
   Render,
   UseGuards,
   Request,
@@ -17,6 +15,7 @@ import { CategoriaService } from '../categoria/categoria.service';
 import { EstoqueService } from '../estoque/estoque.service';
 import { AuthenticatedGuard } from '../../common/guards/authenticated.guard';
 import { AutorService } from '../autor/autor.service';
+import { EmprestimosService } from '../emprestimos/emprestimos.service';
 
 @Controller('livros')
 @UseGuards(AuthenticatedGuard)
@@ -25,34 +24,33 @@ export class LivrosController {
     private readonly livrosService: LivrosService,
     private readonly categoriaService: CategoriaService,
     private readonly autorService: AutorService,
+    private readonly emprestimosService: EmprestimosService,
     private readonly estoqueService: EstoqueService,
   ) {}
 
-  /** Lista todos os livros - Protegido por autenticação */
+     /** Página para criar novo livro */
+     @Get('novo')
+     @Render('livros/novo')
+     novoLivro(@Request() req) {
+       return {
+         message: req.flash('message'),
+         errorMessage: req.flash('errorMessage'),
+       };
+     }
+
+  /** Listar todos os livros */
   @Get()
   async listarLivros(@Request() req, @Res() res: Response) {
-
     if (!req.session?.user) {
       return res.redirect('/auth/login');
     }
 
     try {
       const livros = await this.livrosService.findAll();
-
       return res.render('livros/index', { livros, user: req.session.user });
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao carregar livros' });
     }
-  }
-
-  /** Página para criar novo livro */
-  @Get('novo')
-  @Render('livros/novo')
-  novoLivro(@Request() req) {
-    return {
-      message: req.flash('message'),
-      errorMessage: req.flash('errorMessage'),
-    };
   }
 
   /** Criar livro */
@@ -64,7 +62,6 @@ export class LivrosController {
   ) {
     try {
       const { categoria, autor, quantidade_estoque, ...dadosLivro } = livroData;
-
 
       // 🔹 Criar ou buscar categoria
       const categoriaEntity =
@@ -84,7 +81,6 @@ export class LivrosController {
       // 🔹 Criar estoque associado ao livro
       if (quantidade_estoque !== undefined) {
         await this.estoqueService.create(livro, quantidade_estoque);
- 
       }
 
       req.flash(
@@ -93,7 +89,6 @@ export class LivrosController {
       );
       return res.redirect('/livros/novo');
     } catch (error) {
-
       req.flash('errorMessage', 'Erro ao cadastrar o livro.');
       return res.redirect('/livros/novo');
     }
@@ -102,27 +97,31 @@ export class LivrosController {
   /** Página de detalhes do livro */
   @Get(':id')
   @Render('livros/detalhes')
-  async verLivro(@Param('id') id: number, @Res() res, @Request() req) {
-    const livro = await this.livrosService.findOneDetalhado(id);
+  async verLivro(@Param('id') id: number, @Request() req) {
+    try {
+      const livro = await this.livrosService.findOneDetalhado(id);
 
-    if (!livro) {
-      return { erro: 'Livro não encontrado', hideMenu: false };
+      if (!livro) {
+        return { erro: 'Livro não encontrado', hideMenu: false };
+      }
+
+      const estoque = await this.estoqueService.findOne(livro.id_livro);
+      const quantidade_estoque = estoque?.quantidade_estoque || 0;
+
+      return {
+        livro,
+        quantidade_estoque,
+        podeReservar: quantidade_estoque > 0,
+        success: req.flash('success')[0] || null,
+        error: req.flash('error')[0] || null,
+      };
+    } catch (error) {
+      return { erro: 'Erro ao carregar livro.', hideMenu: false };
     }
-    // 🔹 Buscar estoque
-    const estoque = await this.estoqueService.findOne(livro.id_livro);
-    const quantidade_estoque = estoque?.quantidade_estoque || 0;
-
-    return {
-      livro,
-      quantidade_estoque,
-
-      podeReservar: quantidade_estoque > 0,
-      success: req.flash('success')[0] || null,
-      error: req.flash('error')[0] || null
-    };
   }
 
-  /** Criar reserva do livro */
+
+  /** Reservar um livro */
   @Post(':id/reservar')
   async reservarLivro(
     @Request() req,
@@ -130,28 +129,15 @@ export class LivrosController {
     @Param('id') id: number,
   ) {
     try {
-      const codigoReserva = await this.livrosService.reservarLivro(
-        id,
-        req.session.user.id_usuario,
-      );
-
-      const sucesso = await this.livrosService.reservarLivro(
-        id,
-        req.session.user.id_usuario,
-      );
-
-      if (sucesso) {
-        req.flash(
-          'success',
-          `Livro reservado com sucesso! Código: ${codigoReserva}`,
-        );
-      } else {
-        req.flash('error', 'Livro indisponível para reserva.');
-      }
+      await this.emprestimosService.reservar(id);
+      req.flash('success', 'Livro reservado com sucesso!');
     } catch (error) {
-      req.flash('error', 'Ocorreu um erro ao reservar o livro.');
+      req.flash('error', 'Erro ao reservar o livro.');
     }
 
     return res.redirect(`/livros/${id}`);
   }
+
+ 
+
 }

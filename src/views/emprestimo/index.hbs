@@ -2,17 +2,23 @@
   {{#*inline "content"}}
     <style>
       .emprestimos-container {
-        max-width: 800px;
-        margin: 50px auto;
-        background: white;
+        position: absolute;
+        top: 50px;
+        max-width: 900px;
+        margin: auto;
+        background: rgb(252, 252, 252);
         padding: 20px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
+      
+      
       }
 
       .emprestimo-item {
-        border-bottom: 1px solid #ddd;
+        border-bottom: 2px solid #797878;
         padding: 10px 0;
+        margin-bottom: 10px;
+        margin-top: 50px;
       }
 
       .emprestimo-item:last-child {
@@ -20,42 +26,64 @@
       }
 
       .devolver-button {
-        background-color: #dc3545;
+        background-color: #35dc51;
         color: white;
         padding: 5px 10px;
         border: none;
         border-radius: 5px;
         cursor: pointer;
       }
+      .success-message {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+     }
+
+      .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+      }
     </style>
 
     <div class="emprestimos-container">
-      <h2>Meus Empréstimos</h2>
+        <h2>Meus Empréstimos</h2>
 
-      {{#if emprestimos.length}}
-        {{#each emprestimos}}
-          <div class="emprestimo-item">
-            <p><strong>Livro:</strong> {{this.livro.nome_livro}}</p>
-            <p><strong>Data do Empréstimo:</strong> {{this.dataEmprestimo}}</p>
-            <p><strong>Data Prevista de Devolução:</strong> {{this.dataPrevistaDevolucao}}</p>
+        {{#unless hideMenu}}
+          {{> menu}}
+        {{/unless}}
 
-            {{#if this.dataDevolucao}}
-              <p><strong>Devolvido em:</strong> {{this.dataDevolucao}}</p>
-            {{else}}
-              <form action="/emprestimos/{{this.id_emprestimo}}/devolver" method="post">
-                <button class="devolver-button" type="submit">Devolver</button>
-              </form>
-            {{/if}}
-          </div>
-        {{/each}}
-      {{else}}
-        <p>Nenhum empréstimo ativo.</p>
-      {{/if}}
-          </div>
-        {{/each}}
-      {{else}}
-        <p>Nenhum empréstimo ativo.</p>
-      {{/if}}
-    </div>
+        {{#if message}}
+          <div class="success-message">{{message}}</div>
+        {{/if}}
+
+        {{#if errorMessage}}
+          <div class="error-message">{{errorMessage}}</div>
+        {{/if}}
+
+        {{#if emprestimos.length}}
+          {{#each emprestimos}}
+            <div class="emprestimo-item">
+              <p><strong>Livro:</strong> {{this.livro.nome_livro}}</p>
+              <p><strong>Data do Empréstimo:</strong> {{this.data_emprestimo}}</p>
+              <p><strong>Data Prevista de Devolução:</strong> {{this.data_prevista_devolucao}}</p>
+
+              {{#if this.data_devolucao}}
+                <p><strong>Devolvido em:</strong> {{this.data_devolucao}}</p>
+              {{else}}
+                <form action="/emprestimos/{{this.id_emprestimo}}/devolver" method="post">
+                  <button class="devolver-button" type="submit">Devolver</button>
+                </form>
+              {{/if}}
+            </div>
+          {{/each}}
+        {{else}}
+          <p>Nenhum empréstimo ativo.</p>
+        {{/if}}
+      </div>
   {{/inline}}
 {{/main}}

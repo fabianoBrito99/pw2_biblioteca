@@ -63,7 +63,9 @@
     </style>
 
     <div class="livro-container">
-
+  {{#unless hideMenu}}
+    {{> menu}}
+  {{/unless}}
       <h2 class="livro-header">{{livro.nome_livro}}</h2>
         {{#if success}}
         <div class="success-message">

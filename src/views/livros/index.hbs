@@ -17,7 +17,7 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.219); }
   </style>
 </head>
-<h1>Lista de Livros</h1>
+
 <div class='container'>
 <h1>Lista de Livros</h1>
   {{#unless hideMenu}}
@@ -28,7 +28,7 @@
       <a class='card' href='/livros/{{this.id_livro}}'>
 
         <li class='liTeste'>
-          {{!-- <a href='/livros/{{this.id_livro}}'>{{this.nome_livro}}</a> --}}
+      
           <strong>{{nome_livro}}</strong>
           <span> <strong>Descrição: </strong>{{this.descricao}}</span>
           <span><strong>Ano de Lançamento:</strong>

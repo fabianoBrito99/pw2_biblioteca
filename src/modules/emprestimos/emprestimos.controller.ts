@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Render, Request, Response } from '@nestjs/common';
 import { EmprestimosService } from './emprestimos.service';
 
 @Controller('emprestimos')
@@ -6,9 +6,17 @@ export class EmprestimosController {
   constructor(private readonly emprestimosService: EmprestimosService) {}
 
   @Get()
-  async listarEmprestimos() {
-    return this.emprestimosService.listarEmprestimos();
+  @Render('emprestimo/index') // Certifique-se de que o caminho correto do arquivo está sendo passado
+  async listarEmprestimos(@Request() req) {
+    const emprestimos = await this.emprestimosService.listarEmprestimos();
+  
+    return {
+      emprestimos,
+      message: req.flash('message'),
+      errorMessage: req.flash('errorMessage'),
+    };
   }
+  
 
   @Post(':id_livro/reservar')
   async reservarLivro(@Param('id_livro') idLivro: number) {
@@ -22,15 +30,21 @@ export class EmprestimosController {
     }
   }
 
-  @Patch(':id_emprestimo/devolver')
-  async devolverLivro(@Param('id_emprestimo') idEmprestimo: number) {
+  @Post(':id_emprestimo/devolver')
+  async devolverLivro(
+    @Param('id_emprestimo') idEmprestimo: number,
+    @Request() req,
+    @Response() res
+  ) {
     try {
       console.log(`[INFO] Iniciando devolução do empréstimo ID ${idEmprestimo}`);
-      const emprestimo = await this.emprestimosService.devolver(idEmprestimo);
-      return { success: 'Livro devolvido com sucesso!', emprestimo };
+      await this.emprestimosService.devolver(idEmprestimo);
+      req.flash('message', 'Livro devolvido com sucesso!');
     } catch (error) {
       console.error(`[ERRO] Falha ao devolver livro ID ${idEmprestimo}: ${error.message}`);
-      return { error: 'Erro ao devolver o livro.' };
+      req.flash('errorMessage', 'Erro ao devolver o livro.');
     }
+
+    return res.redirect('/emprestimos');
   }
 }
