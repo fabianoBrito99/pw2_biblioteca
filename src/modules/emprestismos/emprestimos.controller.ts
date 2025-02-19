@@ -1,28 +1,36 @@
-import { Controller, Get, Post, Patch, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param } from '@nestjs/common';
 import { EmprestimosService } from './emprestimos.service';
-import { Emprestimos } from '../../entities/emprestimos.entity';
 
 @Controller('emprestimos')
 export class EmprestimosController {
   constructor(private readonly emprestimosService: EmprestimosService) {}
 
   @Get()
-  async listarEmprestimos(): Promise<Emprestimos[]> {
-    return this.emprestimosService.findAll();
+  async listarEmprestimos() {
+    return this.emprestimosService.listarEmprestimos();
   }
 
-  @Get(':id')
-  async verEmprestimo(@Param('id') id: number): Promise<Emprestimos> {
-    return this.emprestimosService.findOne(id);
+  @Post(':id_livro/reservar')
+  async reservarLivro(@Param('id_livro') idLivro: number) {
+    try {
+      console.log(`[INFO] Iniciando reserva do livro ID ${idLivro}`);
+      const emprestimo = await this.emprestimosService.reservar(idLivro);
+      return { success: 'Livro reservado com sucesso!', emprestimo };
+    } catch (error) {
+      console.error(`[ERRO] Falha ao reservar livro ID ${idLivro}: ${error.message}`);
+      return { error: 'Erro ao reservar o livro.' };
+    }
   }
 
-  @Post()
-  async criarEmprestimo(@Body() data: Partial<Emprestimos>): Promise<Emprestimos> {
-    return this.emprestimosService.create(data);
-  }
-
-  @Patch(':id/devolver')
-  async devolverLivro(@Param('id') id: number): Promise<void> {
-    return this.emprestimosService.devolverLivro(id);
+  @Patch(':id_emprestimo/devolver')
+  async devolverLivro(@Param('id_emprestimo') idEmprestimo: number) {
+    try {
+      console.log(`[INFO] Iniciando devolução do empréstimo ID ${idEmprestimo}`);
+      const emprestimo = await this.emprestimosService.devolver(idEmprestimo);
+      return { success: 'Livro devolvido com sucesso!', emprestimo };
+    } catch (error) {
+      console.error(`[ERRO] Falha ao devolver livro ID ${idEmprestimo}: ${error.message}`);
+      return { error: 'Erro ao devolver o livro.' };
+    }
   }
 }

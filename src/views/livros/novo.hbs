@@ -16,7 +16,23 @@
     #5340ff, #222757); color: white; padding: 12px; border: none; border-radius:
     8px; font-size: 16px; cursor: pointer; width: 100%; transition: background
     0.3s ease; } .button:hover { background: linear-gradient(to bottom, #6451ff,
-    #333383); }
+    #333383);}
+    
+        .alert {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 1rem;
+      }
+
+      .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 1rem;
+      } }
   </style>
 </head>
 
@@ -24,11 +40,11 @@
   <h1>Novo Livro</h1>
 
   {{#if message}}
-    <div class='alert alert-success'>{{message}}</div>
+    <div class='success-message'>{{message}}</div>
   {{/if}}
 
   {{#if errorMessage}}
-    <div class='alert alert-error'>{{errorMessage}}</div>
+    <div class='alert'>{{errorMessage}}</div>
   {{/if}}
 
   <form action='/livros' method='post'>

@@ -44,22 +44,38 @@
         background-color: #dc3545;
         cursor: not-allowed;
       }
+      .alert {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 1rem;
+      }
+
+      .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 1rem;
+      }
+      
     </style>
 
     <div class="livro-container">
-      {{#if success}}
-        <div class="alert alert-success">
+
+      <h2 class="livro-header">{{livro.nome_livro}}</h2>
+        {{#if success}}
+        <div class="success-message">
           {{success}}
         </div>
       {{/if}}
 
       {{#if error}}
-        <div class="alert alert-danger">
+        <div class="alert">
           {{error}}
         </div>
       {{/if}}
-
-      <h2 class="livro-header">{{livro.nome_livro}}</h2>
 
       <p class="livro-info"><strong>Quantidade de Páginas:</strong> {{livro.quantidade_paginas}}</p>
       <p class="livro-info"><strong>Descrição:</strong> {{livro.descricao}}</p>

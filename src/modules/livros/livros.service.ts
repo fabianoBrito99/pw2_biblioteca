@@ -29,16 +29,12 @@ export class LivrosService {
 
   /** Retorna todos os livros com suas categorias e autores */
   async findAll(): Promise<Livro[]> {
-    console.log('🔹 [Service] Buscando todos os livros');
-
     try {
       console.log('🔹 [Service] Buscando livros sem relations...');
       const livrosSemRelations = await this.livroRepository.find({
         select: ['id_livro', 'nome_livro'],
       });
-      console.log('✅ [Service] Livros sem relations:', livrosSemRelations);
 
-      console.log('🔹 [Service] Buscando livros com categorias e autores...');
       const livros = await this.livroRepository.find({
         relations: ['categorias', 'autores'],
       });
@@ -49,10 +45,8 @@ export class LivrosService {
         livro['quantidade_estoque'] = estoque?.quantidade_estoque || 0; // Evita erro se não houver estoque
       }
 
-      console.log('✅ [Service] Livros encontrados:', livros);
       return livros;
     } catch (error) {
-      console.error('❌ [Service] Erro ao buscar livros:', error);
       throw new Error('Erro ao buscar livros no banco de dados.');
     }
   }
@@ -135,48 +129,49 @@ export class LivrosService {
   }
 
   /** Criar uma reserva */
-/** Criar uma reserva */
-async reservarLivro(id_livro: number, id_usuario: number): Promise<string> {
-  // Busca o livro
-  const livro = await this.livroRepository.findOne({ where: { id_livro } });
+  async reservarLivro(id_livro: number, id_usuario: number): Promise<string> {
+    // Busca o livro
+    const livro = await this.livroRepository.findOne({ where: { id_livro } });
 
-  if (!livro) {
-    throw new Error('Livro não encontrado.');
+    if (!livro) {
+      throw new Error('Livro não encontrado.');
+    }
+
+    // Busca o estoque do livro usando o EstoqueService
+    const estoque = await this.estoqueService.findOne(id_livro);
+
+    if (!estoque || estoque.quantidade_estoque <= 0) {
+      throw new Error('Livro indisponível para reserva.');
+    }
+
+    // Diminui o estoque
+    estoque.quantidade_estoque -= 1;
+    await this.estoqueService.updateQuantidade(
+      id_livro,
+      estoque.quantidade_estoque,
+    );
+
+    // Cria o empréstimo
+    const emprestimo = this.emprestimosRepository.create({
+      data_emprestimo: new Date(),
+      data_prevista_devolucao: new Date(
+        new Date().setDate(new Date().getDate() + 7),
+      ), // 7 dias para devolução
+      data_devolucao: null,
+      fk_id_livro: id_livro,
+    });
+
+    const emprestimoSalvo = await this.emprestimosRepository.save(emprestimo);
+
+    // Associa usuário ao empréstimo
+    await this.emprestimosRepository.query(
+      `INSERT INTO usuario_emprestimos (fk_id_usuario, fk_id_emprestimo) VALUES (?, ?)`,
+      [id_usuario, emprestimoSalvo.id_emprestimo],
+    );
+
+    // Gera um código de reserva
+    const codigoReserva = `cod${emprestimoSalvo.id_emprestimo}`;
+
+    return `Livro reservado com sucesso! Vá até a biblioteca e apresente o código: ${codigoReserva}`;
   }
-
-  // Busca o estoque do livro usando o EstoqueService
-  const estoque = await this.estoqueService.findOne(id_livro);
-
-  if (!estoque || estoque.quantidade_estoque <= 0) {
-    throw new Error('Livro indisponível para reserva.');
-  }
-
-  // Diminui o estoque
-  estoque.quantidade_estoque -= 1;
-  await this.estoqueService.updateQuantidade(id_livro, estoque.quantidade_estoque);
-
-  // Cria o empréstimo
-  const emprestimo = this.emprestimosRepository.create({
-    data_emprestimo: new Date(),
-    data_prevista_devolucao: new Date(
-      new Date().setDate(new Date().getDate() + 7)
-    ), // 7 dias para devolução
-    data_devolucao: null,
-    fk_id_livro: id_livro,
-  });
-
-  const emprestimoSalvo = await this.emprestimosRepository.save(emprestimo);
-
-  // Associa usuário ao empréstimo
-  await this.emprestimosRepository.query(
-    `INSERT INTO usuario_emprestimos (fk_id_usuario, fk_id_emprestimo) VALUES (?, ?)`,
-    [id_usuario, emprestimoSalvo.id_emprestimo]
-  );
-
-  // Gera um código de reserva
-  const codigoReserva = `cod${emprestimoSalvo.id_emprestimo}`;
-
-  return `Livro reservado com sucesso! Vá até a biblioteca e apresente o código: ${codigoReserva}`;
-}
-
 }

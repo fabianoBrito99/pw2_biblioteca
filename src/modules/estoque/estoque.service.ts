@@ -33,6 +33,10 @@ export class EstoqueService {
     if (!estoque) {
       throw new Error('Estoque não encontrado');
     }
+    if (quantidade < 0) {
+      console.error(`[ERRO] Tentativa de definir estoque negativo para o livro ${estoque.livro?.nome_livro}`);
+      throw new Error('A quantidade em estoque não pode ser negativa.');
+    }
 
     estoque.quantidade_estoque = quantidade;
     return await this.estoqueRepository.save(estoque);

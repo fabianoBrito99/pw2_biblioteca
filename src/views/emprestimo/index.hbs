@@ -36,16 +36,21 @@
         {{#each emprestimos}}
           <div class="emprestimo-item">
             <p><strong>Livro:</strong> {{this.livro.nome_livro}}</p>
-            <p><strong>Data do Empréstimo:</strong> {{this.data_emprestimo}}</p>
-            <p><strong>Data Prevista de Devolução:</strong> {{this.data_prevista_devolucao}}</p>
+            <p><strong>Data do Empréstimo:</strong> {{this.dataEmprestimo}}</p>
+            <p><strong>Data Prevista de Devolução:</strong> {{this.dataPrevistaDevolucao}}</p>
 
-            {{#if this.data_devolucao}}
-              <p><strong>Devolvido em:</strong> {{this.data_devolucao}}</p>
+            {{#if this.dataDevolucao}}
+              <p><strong>Devolvido em:</strong> {{this.dataDevolucao}}</p>
             {{else}}
               <form action="/emprestimos/{{this.id_emprestimo}}/devolver" method="post">
                 <button class="devolver-button" type="submit">Devolver</button>
               </form>
             {{/if}}
+          </div>
+        {{/each}}
+      {{else}}
+        <p>Nenhum empréstimo ativo.</p>
+      {{/if}}
           </div>
         {{/each}}
       {{else}}
