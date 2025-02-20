@@ -10,11 +10,33 @@
     { max-width: 800px; margin: 50px auto; background: #fff; padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); display: flex; flex-direction:
     column; align-items: center; justify-content: center; border-radius: 10px; }
-    .livro { border-bottom: 1px solid #ddd; padding: 10px 0; } .livro:last-child
-    { border-bottom: none; } h2 { color: #333; } p { color: #666; } .liTeste{
-    display: flex; flex-direction: column; margin-bottom: 20px; background:
-    rgb(218, 216, 200); width: 500px; border-radius: 10px ; padding: 19px 50px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.219); }
+    .livro { border-bottom: 1px solid #ddd; padding: 10px 0; display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .livro:last-child { border-bottom: none; }
+    h2 { color: #333; }
+    p { color: #666; }
+    .liTeste{
+      display: flex; flex-direction: column; margin-bottom: 20px; background:
+      rgb(218, 216, 200); width: 500px; border-radius: 10px ; padding: 19px 50px;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.219); position: relative;
+    }
+    .editar{
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #a6ff40;
+    }
+    .excluir{
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #ff4040;
+    }
+    .icones{
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
   </style>
 </head>
 
@@ -25,17 +47,25 @@
   {{/unless}}
   <ul>
     {{#each livros}}
-      <a class='card' href='/livros/{{this.id_livro}}'>
-
-        <li class='liTeste'>
-      
+      <li class='liTeste'>
+        <a class='card' href='/livros/{{this.id_livro}}'>
           <strong>{{nome_livro}}</strong>
           <span> <strong>Descrição: </strong>{{this.descricao}}</span>
-          <span><strong>Ano de Lançamento:</strong>
-            {{this.ano_publicacao}}</span>
+          <span><strong>Ano de Lançamento:</strong> {{this.ano_publicacao}}</span>
+        </a>
+      
+        <div class='icones'>
+          <a href='/livros/editar/{{this.id_livro}}'>
+            <button class='editar'>📝</i></button>
+          </a>
+          <form action="/livros/deletar/{{this.id_livro}}" method="post" style="display:inline;">
+            <button class="excluir" type="submit" onclick="return confirm('Tem certeza que deseja excluir este livro?')">🗑</button>
+          </form>
+        </div>
 
-        </li>
-      </a>
+      </li>
     {{/each}}
   </ul>
 </div>
+
+

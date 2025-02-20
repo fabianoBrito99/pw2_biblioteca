@@ -37,9 +37,11 @@ async function bootstrap() {
   app.use(flashErrors);
   app.useGlobalFilters(new NotFoundExceptionFilter());
 
-  // ✅ Agora o TypeORM já foi inicializado, podemos acessar a conexão
   const dataSource = app.get(DataSource);
   console.log('🔹 [Debug] Entidades registradas no TypeORM:', dataSource.entityMetadatas.map(e => e.name));
+  
+    // Adiciona helper "eq" para comparar valores no Handlebars
+    hbs.registerHelper('eq', (a, b) => a == b);
 
   await app.listen(3000);
 }

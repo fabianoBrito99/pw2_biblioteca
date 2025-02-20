@@ -8,6 +8,7 @@ import {
   UseGuards,
   Request,
   Res,
+  Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { LivrosService } from './livros.service';
@@ -28,15 +29,36 @@ export class LivrosController {
     private readonly estoqueService: EstoqueService,
   ) {}
 
-     /** Página para criar novo livro */
-     @Get('novo')
-     @Render('livros/novo')
-     novoLivro(@Request() req) {
-       return {
-         message: req.flash('message'),
-         errorMessage: req.flash('errorMessage'),
-       };
-     }
+  /** Página para editar livro */
+  @Get('editar/:id')
+@Render('livros/novo')
+async editarLivro(@Param('id') id: number, @Request() req) {
+  try {
+    const livro = await this.livrosService.findOneDetalhado(id);
+
+    // 🔹 Certifique-se de que a categoria e o autor sejam strings e não objetos
+    const categoria = livro.categorias && livro.categorias.length > 0 ? livro.categorias[0].nome_categoria : '';
+    const autor = livro.autores && livro.autores.length > 0 ? livro.autores[0].nome : '';
+
+    return { 
+      livro: { ...livro, categoria, autor } // Garante que os valores corretos sejam passados
+    };
+  } catch (error) {
+    req.flash('errorMessage', 'Erro ao carregar livro para edição.');
+    return { livro: null };
+  }
+}
+
+
+  /** Página para criar novo livro */
+  @Get('novo')
+  @Render('livros/novo')
+  novoLivro(@Request() req) {
+    return {
+      message: req.flash('message'),
+      errorMessage: req.flash('errorMessage'),
+    };
+  }
 
   /** Listar todos os livros */
   @Get()
@@ -53,43 +75,44 @@ export class LivrosController {
     }
   }
 
-  /** Criar livro */
+  /** Criar ou atualizar livro */
   @Post()
-  async criarLivro(
+  async criarOuAtualizarLivro(
     @Res() res: Response,
     @Body() livroData: any,
     @Request() req,
   ) {
     try {
-      const { categoria, autor, quantidade_estoque, ...dadosLivro } = livroData;
+      const { id_livro, categoria, autor, quantidade_estoque, ...dadosLivro } =
+        livroData;
 
-      // 🔹 Criar ou buscar categoria
+      // 🔹 Criar ou buscar categoria e autor
       const categoriaEntity =
         await this.categoriaService.findOrCreate(categoria);
-
-      // 🔹 Criar ou buscar autor
       const autorEntity = await this.autorService.create(autor);
 
-      // 🔹 Criar o livro com as associações
-      const livro = await this.livrosService.create(
-        dadosLivro,
-        quantidade_estoque,
-        categoriaEntity,
-        autorEntity,
-      );
-
-      // 🔹 Criar estoque associado ao livro
-      if (quantidade_estoque !== undefined) {
-        await this.estoqueService.create(livro, quantidade_estoque);
+      let livro;
+      if (id_livro) {
+        livro = await this.livrosService.update(
+          id_livro,
+          dadosLivro,
+          categoriaEntity,
+          autorEntity,
+        );
+        req.flash('message', '📚 Livro atualizado com sucesso!');
+      } else {
+        livro = await this.livrosService.create(
+          dadosLivro,
+          quantidade_estoque,
+          categoriaEntity,
+          autorEntity,
+        );
+        req.flash('message', '📚 Livro cadastrado com sucesso!');
       }
 
-      req.flash(
-        'message',
-        '📚 Livro cadastrado com sucesso, incluindo estoque!',
-      );
-      return res.redirect('/livros/novo');
+      return res.redirect('/livros');
     } catch (error) {
-      req.flash('errorMessage', 'Erro ao cadastrar o livro.');
+      req.flash('errorMessage', 'Erro ao salvar o livro.');
       return res.redirect('/livros/novo');
     }
   }
@@ -120,6 +143,21 @@ export class LivrosController {
     }
   }
 
+  /** Rota para deletar um livro */
+  @Post('deletar/:id')
+  async deletarLivro(
+    @Param('id') id: number,
+    @Res() res: Response,
+    @Request() req,
+  ) {
+    try {
+      await this.livrosService.delete(id);
+      req.flash('message', '📚 Livro excluído com sucesso!');
+    } catch (error) {
+      req.flash('errorMessage', 'Erro ao excluir o livro.');
+    }
+    return res.redirect('/livros');
+  }
 
   /** Reservar um livro */
   @Post(':id/reservar')
@@ -137,7 +175,4 @@ export class LivrosController {
 
     return res.redirect(`/livros/${id}`);
   }
-
- 
-
 }

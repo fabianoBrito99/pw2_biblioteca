@@ -11,7 +11,7 @@ export class LivrosService {
 
   constructor(
     private dataSource: DataSource,
-    private readonly estoqueService: EstoqueService
+    private readonly estoqueService: EstoqueService,
   ) {
     this.livroRepository = this.dataSource.getRepository(Livro);
   }
@@ -65,7 +65,7 @@ export class LivrosService {
     livroData: Partial<Livro>,
     quantidade_estoque: number,
     categoria: Categoria,
-    autor: Autor
+    autor: Autor,
   ): Promise<Livro> {
     console.log('🔹 [Service] Criando novo livro:', livroData);
 
@@ -85,4 +85,39 @@ export class LivrosService {
     console.log('[Service] Livro criado com sucesso:', livroSalvo);
     return livroSalvo;
   }
+
+  /** Atualizar um livro */
+  async update(
+    id: number,
+    livroData: Partial<Livro>,
+    categoria: Categoria,
+    autor: Autor,
+  ): Promise<Livro> {
+    const livroExistente = await this.livroRepository.findOne({
+      where: { id_livro: id },
+    });
+
+    if (!livroExistente) {
+      throw new Error('Livro não encontrado.');
+    }
+
+    livroExistente.categorias = [categoria];
+    livroExistente.autores = [autor];
+
+    await this.livroRepository.update(id, livroData);
+
+    return await this.livroRepository.findOne({ where: { id_livro: id } });
+  }
+
+/** Excluir um livro */
+async delete(id: number): Promise<void> {
+  const livro = await this.livroRepository.findOne({ where: { id_livro: id } });
+
+  if (!livro) {
+    throw new Error('Livro não encontrado.');
+  }
+
+  await this.livroRepository.remove(livro);
+}
+
 }
