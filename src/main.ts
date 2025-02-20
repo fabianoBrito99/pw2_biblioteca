@@ -27,6 +27,7 @@ async function bootstrap() {
       secret: 'nest cats',
       resave: false,
       saveUninitialized: false,
+      cookie: { secure: false, maxAge: 1000 * 60 * 60 },
     }),
   );
 
@@ -39,7 +40,7 @@ async function bootstrap() {
 
   const dataSource = app.get(DataSource);
   console.log('🔹 [Debug] Entidades registradas no TypeORM:', dataSource.entityMetadatas.map(e => e.name));
-  
+
     // Adiciona helper "eq" para comparar valores no Handlebars
     hbs.registerHelper('eq', (a, b) => a == b);
 

@@ -61,19 +61,23 @@ async editarLivro(@Param('id') id: number, @Request() req) {
   }
 
   /** Listar todos os livros */
-  @Get()
-  async listarLivros(@Request() req, @Res() res: Response) {
-    if (!req.session?.user) {
-      return res.redirect('/auth/login');
-    }
+/** Listar todos os livros */
+@Get()
+async listarLivros(@Request() req, @Res() res: Response) {
+  console.log('🔹 Usuário na sessão:', req.user);
 
-    try {
-      const livros = await this.livrosService.findAll();
-      return res.render('livros/index', { livros, user: req.session.user });
-    } catch (error) {
-      return res.status(500).json({ error: 'Erro ao carregar livros' });
-    }
+  if (!req.user) {
+    return res.status(403).json({ message: 'Usuário não autenticado' });
   }
+
+  try {
+    const livros = await this.livrosService.findAll();
+    return res.render('livros/index', { livros, user: req.user });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro ao carregar livros' });
+  }
+}
+
 
   /** Criar ou atualizar livro */
   @Post()

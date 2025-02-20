@@ -5,9 +5,13 @@ import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { SessionSerializer } from './session.serializer';
 import { AuthController } from './auth.controller';
+import { usuarioModule } from '../usuarios/usuario.module';
 
 @Module({
-  imports: [UsersModule, PassportModule],
+  imports: [
+    PassportModule.register({ session: true }),
+    usuarioModule, // 🔹 Adicionado para garantir que o UsuarioService esteja disponível
+  ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, SessionSerializer],
 })

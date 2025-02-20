@@ -38,40 +38,55 @@ export class AuthController {
         return res.redirect('/auth/login');
       }
 
-      req.session.user = usuario; 
-      req.session.save(() => { 
-        return res.redirect('/livros');
-      });
+      req.logIn(usuario.usuario, (err) => {
+        if (err) {
+          console.error('🔴 Erro ao autenticar:', err);
+          req.flash('loginError', 'Erro ao autenticar.');
+          return res.redirect('/auth/login');
+        }
 
+        req.session.user = usuario.usuario; // 🔹 Garante que o usuário seja salvo na sessão
+        req.session.save(() => {
+          console.log(
+            '✅ Usuário autenticado e salvo na sessão:',
+            req.session.user,
+          );
+          return res.redirect('/livros');
+        });
+      });
     } catch (error) {
+      console.error('🔴 Erro inesperado no login:', error);
       req.flash('loginError', 'Usuário ou senha inválidos.');
       return res.redirect('/auth/login');
     }
   }
 
- /** Página de registro */
- @Get('/register')
- @Render('auth/register')
- registerPage(@Request() req) {
-   return {
-     successMessage: req.flash('successMessage')[0] || null,
-     errorMessage: req.flash('errorMessage')[0] || null,
-     hideMenu: true
-   };
- }
+  /** Página de registro */
+  @Get('/register')
+  @Render('auth/register')
+  registerPage(@Request() req) {
+    return {
+      successMessage: req.flash('successMessage')[0] || null,
+      errorMessage: req.flash('errorMessage')[0] || null,
+      hideMenu: true,
+    };
+  }
 
- /** Processar cadastro */
- @Post('/register')
- async register(@Request() req, @Body() body, @Res() res: Response) {
-   try {
-     await this.authService.register(body);
-     req.flash('successMessage', 'Conta criada com sucesso! Redirecionando para login...');
-     return res.redirect('/auth/register'); // Redireciona para exibir a mensagem antes do login
-   } catch (error) {
-     req.flash('errorMessage', error.message);
-     return res.redirect('/auth/register'); // Redireciona para exibir a mensagem de erro
-   }
- }
+  /** Processar cadastro */
+  @Post('/register')
+  async register(@Request() req, @Body() body, @Res() res: Response) {
+    try {
+      await this.authService.register(body);
+      req.flash(
+        'successMessage',
+        'Conta criada com sucesso! Redirecionando para login...',
+      );
+      return res.redirect('/auth/register'); // Redireciona para exibir a mensagem antes do login
+    } catch (error) {
+      req.flash('errorMessage', error.message);
+      return res.redirect('/auth/register'); // Redireciona para exibir a mensagem de erro
+    }
+  }
 
   /** Página inicial (home) */
   @UseGuards(AuthenticatedGuard)

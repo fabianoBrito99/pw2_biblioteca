@@ -1,0 +1,81 @@
+{{#> main}}
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: start;
+      align-items: start;
+      height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .profile-info {
+      text-align: left;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .profile-info p {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 5px 0;
+    }
+
+    .logout-button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      border: none;
+      background: linear-gradient(to bottom, #5340ff, #222757);
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .logout-button:hover {
+      background: linear-gradient(to bottom, #6451ff, #333383);
+    }
+  </style>
+
+  {{#*inline "content"}}
+    {{#unless hideMenu}}
+      {{> menu}}
+    {{/unless}}
+
+    <div class="container">
+      <h1>Perfil de {{ usuario.nome_usuario }}</h1>
+
+      <div class="profile-info">
+        <p><strong>Email:</strong> {{ usuario.email }}</p>
+        <p><strong>Telefone:</strong> {{ usuario.telefone }}</p>
+        <p><strong>CEP:</strong> {{ usuario.cep }}</p>
+        <p><strong>Rua:</strong> {{ usuario.rua }}</p>
+        <p><strong>Bairro:</strong> {{ usuario.bairro }}</p>
+        <p><strong>Número:</strong> {{ usuario.numero }}</p>
+      </div>
+
+      <a href='/logout' class="logout-button">Deslogar</a>
+    </div>
+  {{/inline}}
+{{/main}}

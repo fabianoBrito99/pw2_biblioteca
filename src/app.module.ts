@@ -8,6 +8,7 @@ import { CategoriaModule } from './modules/categoria/categoria.module';
 import { EstoqueModule } from './modules/estoque/estoque.module';
 import { AutorModule } from './modules/autor/autor.module';
 import { EmprestimosModule } from './modules/emprestimos/emprestismos.module';
+import { usuarioModule } from './modules/usuarios/usuario.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EmprestimosModule } from './modules/emprestimos/emprestismos.module';
     EstoqueModule,
     AutorModule,
     EmprestimosModule,
+    usuarioModule,
   ],
   controllers: [AppController],
   providers: [],
